@@ -1,0 +1,88 @@
+{
+  "name": "yiisoft/yii2-app-basic",
+  "description": "Yii 2 Basic Project Template",
+  "keywords": [
+    "yii2",
+    "framework",
+    "basic",
+    "project template"
+  ],
+  "homepage": "http://www.yiiframework.com/",
+  "type": "project",
+  "license": "BSD-3-Clause",
+  "support": {
+    "issues": "https://github.com/yiisoft/yii2/issues?state=open",
+    "forum": "http://www.yiiframework.com/forum/",
+    "wiki": "http://www.yiiframework.com/wiki/",
+    "irc": "irc://irc.freenode.net/yii",
+    "source": "https://github.com/yiisoft/yii2"
+  },
+  "minimum-stability": "stable",
+  "require": {
+    "php": ">=5.5.0",
+    "yiisoft/yii2": "~2.0.13",
+    "yiisoft/yii2-bootstrap": "~2.0.0",
+    "yiisoft/yii2-swiftmailer": "~2.0.0",
+    "yiisoft/yii2-jui": "^2.0",
+    "bower-asset/bootbox": "~4.3.0",
+    "phpoffice/phpexcel": "^1.8",
+    "happyworm/jPlayer": "2.*",
+    "yiisoft/yii2-imagine": "~2.1.0",
+    "kartik-v/yii2-field-range": "*",
+    "kartik-v/yii2-widget-datepicker": "*",
+    "kartik-v/yii2-widget-select2": "*",
+    "kartik-v/yii2-widget-alert": "*"
+  },
+  "require-dev": {
+    "yiisoft/yii2-debug": "~2.0.0",
+    "yiisoft/yii2-gii": "~2.0.0",
+    "yiisoft/yii2-faker": "~2.0.0",
+    "codeception/base": "^2.2.3",
+    "codeception/verify": "~0.3.1",
+    "codeception/specify": "~0.4.3",
+    "codeception/codeception": "^2.2"
+  },
+  "config": {
+    "process-timeout": 1800,
+    "fxp-asset": {
+      "enabled": false
+    },
+    "component-dir": "web/js/component/"
+  },
+  "scripts": {
+    "post-install-cmd": [
+      "yii\\composer\\Installer::postInstall"
+    ],
+    "post-create-project-cmd": [
+      "yii\\composer\\Installer::postCreateProject",
+      "yii\\composer\\Installer::postInstall"
+    ]
+  },
+  "extra": {
+    "yii\\composer\\Installer::postCreateProject": {
+      "setPermission": [
+        {
+          "runtime": "0777",
+          "web/assets": "0777",
+          "yii": "0755"
+        }
+      ]
+    },
+    "yii\\composer\\Installer::postInstall": {
+      "generateCookieValidationKey": [
+        "config/web.php"
+      ]
+    }
+  },
+  "asset-installer-paths": {
+    "npm-asset-library": "vendor/npm",
+    "bower-asset-library": "vendor/bower"
+  },
+  "repositories": [
+    {
+      "type": "composer",
+      "url": "https://asset-packagist.org"
+    }
+  ]
+}
+
