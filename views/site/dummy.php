@@ -17,7 +17,10 @@ $this->registerCssFile('@web/css/site.css');
         margin: 0 auto;
         overflow: hidden;
     }
-
+    .blokForImg .imgHolder {
+        width: 67%;
+        margin: auto;
+    }
     .site-dummy {
         padding-top: 15px;
         width: 800px;
@@ -37,12 +40,13 @@ $this->registerCssFile('@web/css/site.css');
         text-align: center;
         font-family: "ProximaNova-Light", sans-serif !important;
         font-weight: normal !important;
-        font-size: 100% !important;
+        font-size: 100% !importan
     }
 
     .site-dummy .imgHolder div {
         margin: 0 auto;
-        width: 120px;
+        width: 180px;
+        padding-right: 25px;
     }
 
     .site-dummy .imgHolder div a {
@@ -88,15 +92,6 @@ $this->registerCssFile('@web/css/site.css');
                 </div>
 
                 <div>
-                    <a href="http://www.opera.com/ru" target="_blank">
-                        <img src="/img/browsers/browser-opera.png" alt="Opera"/>
-                    </a>
-                    <a href="http://www.opera.com/ru" target="_blank">
-                        <span>Opera</span>
-                    </a>
-                </div>
-
-                <div>
                     <a href="https://www.mozilla.org/ru/firefox/new/" target="_blank">
                         <img src="/img/browsers/browser-firefox.png" alt="Firefox"/>
                     </a>
@@ -106,23 +101,14 @@ $this->registerCssFile('@web/css/site.css');
                     </a>
                 </div>
 
-                <div>
-                    <a href="https://www.microsoft.com/ru-ru/windows/microsoft-edge" target="_blank">
-                        <img src="/img/browsers/egg.png" alt="Microsoft Edge"/>
-                    </a>
-                    <a href="https://www.microsoft.com/ru-ru/windows/microsoft-edge" target="_blank">
-                        <span>Microsoft Edge</span>
-                    </a>
-                </div>
-
-                <div>
-                    <a href="https://www.microsoft.com/ru-ru/windows/microsoft-edge" target="_blank">
-                        <img src="/img/browsers/ylogo.png" alt="Яндекс.Браузер "/>
-                    </a>
-                    <a href="https://www.microsoft.com/ru-ru/windows/microsoft-edge" target="_blank">
-                        <span>Яндекс.Браузер</span>
-                    </a>
-                </div>
+<!--                <div>-->
+<!--                    <a href="https://www.microsoft.com/ru-ru/windows/microsoft-edge" target="_blank">-->
+<!--                        <img src="/img/browsers/egg.png" alt="Microsoft Edge"/>-->
+<!--                    </a>-->
+<!--                    <a href="https://www.microsoft.com/ru-ru/windows/microsoft-edge" target="_blank">-->
+<!--                        <span>Microsoft Edge</span>-->
+<!--                    </a>-->
+<!--                </div>-->
 
             </div>
         </div>
@@ -130,3 +116,4 @@ $this->registerCssFile('@web/css/site.css');
 
 
 </div>
+<?php die();

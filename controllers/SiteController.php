@@ -2,9 +2,16 @@
 
 namespace app\controllers;
 
+use app\models\RequestVideoUser;
+use app\models\search\RecordsSearch;
+use SVG\Nodes\Shapes\SVGCircle;
+use Symfony\Component\Finder\Exception\AccessDeniedException;
 use Yii;
+use yii\data\Pagination;
+use yii\db\Exception;
 use yii\helpers\Url;
 use yii\web\Controller;
+use yii\web\Cookie;
 use yii\web\Response;
 use app\models\LoginForm;
 use app\models\User;
@@ -17,10 +24,16 @@ use app\models\Organization;
 use app\models\Server;
 use app\models\Situation;
 
+use SVG\SVG;
+use SVG\Nodes\Shapes\SVGRect;
+
 class SiteController extends Controller
 {
+
+    public $startProject = 1;
+
     /**
-     * @inheritdoc
+     * @inheritdoc$startProject
      */
     public function behaviors()
     {
@@ -29,12 +42,12 @@ class SiteController extends Controller
                 'class' => 'yii\filters\AccessControl',
                 'rules' => [
                     [
-                        'actions' => ['login', 'error', 'save', 'chat', 'create-png'],
+                        'actions' => ['login', 'error', 'save', 'chat', 'watermark', 'save-file'],
                         'allow' => true,
                     ],
                     [
                         'allow' => true,
-                        'actions' => ['logout', 'index'],
+                        'actions' => ['logout', 'index', 'browser-outdated'],
                         'roles' => ['@'],
                     ],
                     [
@@ -45,6 +58,18 @@ class SiteController extends Controller
                             return ((Yii::$app->user->identity->type === User::TYPE_USER_ADMIN) ||
                                 (Yii::$app->user->identity->type === User::TYPE_USER_MANAGER) ||
                                 (Yii::$app->user->identity->type === User::TYPE_USER_MASTER));
+                        }
+                    ],
+
+                    [
+                        'actions' => ['archive'],
+                        'roles' => ['@'],
+                        'allow' => true,
+                        'matchCallback' => function ($rule, $action) {
+                            return ((Yii::$app->user->identity->type === User::TYPE_USER_ADMIN) ||
+                                (Yii::$app->user->identity->type === User::TYPE_USER_MANAGER) ||
+                                (Yii::$app->user->identity->type === User::TYPE_USER_MASTER) ||
+                                (Yii::$app->user->identity->type === User::TYPE_USER_STUDENT));
                         }
                     ],
                     [
@@ -88,7 +113,24 @@ class SiteController extends Controller
             $this->layout = '@app/views/layouts/main';
         }
 
+        if (User::checkUserAgent()) {
+            return $this->renderPartial('dummy');
+        }
+
         $this->enableCsrfValidation = false;
+
+//        if (isset(Yii::$app->user->identity->id)) {
+//
+//            if (($action->id === 'translate-room') || ($action->id === 'index')) {
+//
+//                $userSituation = Situation::find()->where(['user_id' => Yii::$app->user->identity->id])->asArray()->one();
+//
+//                //  if (((Yii::$app->request->referrer !== 'https://watermark.wrk/site/translate-room') && ($action->id !== 'index')) &&
+//                if ((time() <= ($userSituation['last_time']) + 10)) {
+//                    $this->startProject = 0;
+//                }
+//            }
+//        }
 
         return parent::beforeAction($action);
     }
@@ -97,23 +139,19 @@ class SiteController extends Controller
      * Страница просмотра вебинара.
      *
      * @@param string $id
-     * @return string
+     * @return Response|string
      */
     public function actionIndex($id = null)
     {
-
-        if (User::checkUserAgent()) {
-            return $this->renderPartial('dummy');
-        }
-
         // Если это гость, то отправим его авторизироваться
         $this->guestGoLogin();
 
-        $userSituation = Situation::find()->where(['user_id' => Yii::$app->user->identity->id])->asArray()->one();
-
-        if (!(time() > ($userSituation['last_time']) + 7)) {
-            die("Вы уже открыли трансляцию в другом окне браузера (или в другом браузере).");
-        }
+//        $userSituation = Situation::find()->where(['user_id' => Yii::$app->user->identity->id])->asArray()->one();
+//
+//        if ((Yii::$app->request->referrer !== 'https://watermark.wrk/site/translate-room') &&
+//            ((time() <= ($userSituation['last_time']) + 10))) {
+//            $this->startProject = 0;
+//        }
 
         /** @var Server $myServer */
         $myServer = Server::find()->one();
@@ -124,15 +162,20 @@ class SiteController extends Controller
 
         $chat = Chat::getChatByDate((time() - (3600 * 24)), 1);
 
+        $roomNumber = Yii::$app->params['roomNumber'];
+
         return $this->render('index', [
             'roomId' => $id,
             'chat' => $chat,
             'myServer' => $myServer,
+            'roomNumber' => $roomNumber,
+            'startProject' => $this->startProject,
         ]);
     }
 
     /**
      * Если это гость, то отправим его авторизироваться
+     * @return Response|string
      */
     private function guestGoLogin()
     {
@@ -150,27 +193,25 @@ class SiteController extends Controller
      */
     public function actionLogin()
     {
-        if (User::checkUserAgent()) {
-            return $this->renderPartial('dummy');
-        }
-
         $this->layout = '@app/views/layouts/forLogin';
 
         if (!Yii::$app->user->isGuest) {
             return $this->goHome();
         }
 
+        /** @var LoginForm $model */
         $model = new LoginForm();
 
         if ($model->load(Yii::$app->request->post())) {
 
             if ($model->validate()) {
+                /** @var User $userTmp */
                 $userTmp = User::find()->where(['username' => $model->username])->one();
 
-                $timeFinal = $userTmp->isLogin + 30;
-
-                if (time() > $timeFinal) {
-
+                // /** @ t o d o вернуть вместо 30 - 0 */
+                // $timeFinal = $userTmp->isLogin + 30;
+                ///if (time() > $timeFinal) {
+                if (true) {
                     if ($model->login()) {
 
                         if (Yii::$app->user->identity->type == User::TYPE_USER_ADMIN)
@@ -188,7 +229,7 @@ class SiteController extends Controller
                         return $this->goBack();
                     }
                 } else {
-                    Yii::$app->session->setFlash('error', "Если вы не авторизованы в другом браузере, подождите 40 секунд и повторите попытку.");
+                    Yii::$app->session->setFlash('error', "Если вы не авторизованы в другом браузере, подождите 10 секунд и повторите попытку.");
                 }
             }
         }
@@ -196,6 +237,7 @@ class SiteController extends Controller
         $model->password = '';
         return $this->render('login', [
             'model' => $model,
+            'startProject' => $this->startProject
         ]);
     }
 
@@ -206,6 +248,22 @@ class SiteController extends Controller
      */
     public function actionLogout()
     {
+        if (isset(Yii::$app->user->identity->id)) {
+
+            /** * @var User $user */
+            $user = User::find()->where(['id' => Yii::$app->user->identity->id])->one();
+            if ($user->isLogin != null) {
+                $user->isLogin = $user->isLogin - round($user->isLogin / 2);
+                $user->save(false);
+            }
+
+            /** @var Situation $userSituation */
+            // $userSituation = Situation::find()->where(['user_id' => Yii::$app->user->identity->id])->one();
+            // $userSituation->last_time = $user->isLogin;
+            // $userSituation->save(false);
+
+        }
+
         Yii::$app->user->logout();
 
         return $this->goHome();
@@ -219,14 +277,16 @@ class SiteController extends Controller
      */
     public function actionTranslateRoom($id = null)
     {
-        if (User::checkUserAgent()) {
-            return $this->renderPartial('dummy');
+        $isFireFox = false;
+
+        if (preg_match('(Firefox)', Yii::$app->request->userAgent)) {
+            $isFireFox = true;
         }
 
         // потом надо будет как-то генерировать комнаты
         if ($id === null) $id = 2147483647;
 
-        /** @var int $userCount Кол-во студентов (потом это будет кол-во студентов на конкретом курсе */
+        /** @var int $userCount Кол-во студентов (потом это будет кол-во студентов на конкретом курсе) */
         $userCount = count(User::find()
             ->where(['status_id' => User::STATUS_ACTIVE])
             ->andWhere(['type' => User::TYPE_USER_STUDENT])
@@ -234,14 +294,32 @@ class SiteController extends Controller
 
         $chat = Chat::getChatByDate((time() - (8400 * 20)), 1);
 
+        $startScreen = 1;
+        /** @var Server $myServer */
+        $myServer = Server::find()->one();
+
+        if (isset($myServer->screen) && (time() <= ($myServer->screen + 10))) {
+            sleep(3);
+            if ((time() <= ($myServer->screen + 10))) {
+                $startScreen = 0;
+            }
+        }
+
+        $roomNumber = Yii::$app->params['roomNumber'];
+
         return $this->render('translateRoom', [
             'roomId' => $id,
             'userCount' => $userCount,
-            'chat' => $chat
+            'chat' => $chat,
+            'myServer' => $myServer,
+            'roomNumber' => $roomNumber,
+            'startProject' => $this->startProject,
+            'startScreen' => $startScreen,
+            'isFireFox' => $isFireFox
         ]);
     }
 
-    public function actionSave()
+    public function actionSave(): bool
     {
         $model = new File();
         $model->file = UploadedFile::getInstance($model, 'file');
@@ -266,34 +344,42 @@ class SiteController extends Controller
         }
 
         return $this->render('organizationForm', [
-            'organization' => $organization
+            'organization' => $organization,
+            'startProject' => $this->startProject
         ]);
     }
 
-    public function actionCreatePng($id, $width = null, $percent = null)
+
+    public function actionWatermark()
     {
-        header('Content-Type: image/png; charset=utf-8');
+        Yii::$app->response->format = Response::FORMAT_RAW;
+        if (strstr($_SERVER["HTTP_USER_AGENT"], "MSIE") == false) {
+            header("Cache-Control: no-cache");
+            header("Pragma: no-cache");
+        } else {
+            header("Cache-Control: must-revalidate, post-check=0, pre-check=0");
+            header("Pragma: public");
+        }
+        header("Expires: Sat, 26 Jul 1979 05:00:00 GMT");
+        header("Content-Encoding: utf-8");
+        header("Content-Type: image/svg+xml");
+        header("Cache-Control: max-age=0");
+        header("Access-Control-Expose-Headers: Content-Length,Content-Range");
 
-        if ($percent == null) $percent = 25;
-        if (($width == null) || ($width == 'undefined') || $width == false) $width = 709;
-        $width = (int)$width;
-        if ($width > 800) $width = 800;
+        $percent = 10;
 
-        $oldWidth = 575;
-        $height = (int)($width / 2);
+        $width = 1980;
+        $height = 1020;
 
-        $imgWidth = (int)(($width * $percent) / 100);
         $imgHeight = (int)(($height * $percent) / 100);
+        $imgWidth = (int)(($width * $percent) / 100);
 
-        $img = imagecreatetruecolor($imgWidth, $imgHeight);
+        $imgHeight = 80;
+        $imgWidth = 400;
 
-        $transparent = imagecolorallocatealpha($img, 0, 0, 0, 127);
-        imagefill($img, 5, 0, $transparent);
+        $svg = '<svg width="' . $imgWidth . '" height="' . $imgHeight . '">';
 
-        imagesavealpha($img, true);
-
-        /** @var User $user */
-        $user = User::find()->where(['id' => $id])->one();
+        $user = User::find()->where(['id' => Yii::$app->user->identity->id])->one();
 
         if (!empty($user)) {
             $user->name = htmlspecialchars($user->name);
@@ -315,35 +401,61 @@ class SiteController extends Controller
             $text3 = '+7(812)655-63-21';
         }
 
-        $text1 = trim($text1);
-        $text1 = htmlspecialchars($text1);
+        $svg .= '<text x="0" y="25" font-size="25" fill="red">' . $text1 . '</text>';
+        $svg .= '<text x="0" y="50" font-size="25"  fill="red">' . $text2 . '</text>';
+        $svg .= '<text x="0" y="75" font-size="25"  fill="red">' . $text3 . '</text>';
 
-        $text2 = trim($text2);
-        $text2 = htmlspecialchars($text2);
+        $svg .= '</svg>';
 
-        $text3 = trim($text3);
-        $text3 = htmlspecialchars($text3);
+        $image1 = SVG::fromString($svg);
+        $doc = $image1->getDocument();
 
-        $firstLine = 10;
-        $secondLine = 21;
-        $thirdLine = 34;
-        $fontSize = (int)(($width * 10) / $oldWidth);
-        $x = (int)(($width * 3) / $oldWidth);
+        //header('Content-Type: image/svg+xml; charset=utf-8');
+        //Yii::$app->response->format = 'svg';
 
-        $y1 = (($width * $firstLine) / $oldWidth);
-        $y2 = (($width * $secondLine) / $oldWidth);
-        $y3 = (($width * $thirdLine) / $oldWidth);
-
-        $color = imagecolorallocate($img, 250, 0, 0);
-        $font_path = Yii::$app->basePath . '/web/doc/roboto.ttf';
-
-        imagettftext($img, $fontSize, 0, $x, $y1, $color, $font_path, $text1);
-        imagettftext($img, $fontSize, 0, $x, $y2, $color, $font_path, $text2);
-        imagettftext($img, $fontSize, 0, $x, $y3, $color, $font_path, $text3);
-
-        imagepng($img);
-        imagedestroy($img);
+        return $image1;
     }
 
+    /**
+     * Старый архив, на всякий случай просто редирект
+     *
+     * @throws Exception
+     */
+    public function actionArchive()
+    {
+        $this->redirect('/record/archive');
+    }
 
+    public function actionSaveFile()
+    {
+        ini_set('max_execution_time', 5 * 60000);
+        set_time_limit(5 * 60000);
+
+        $file = Yii::$app->request->get('file');
+
+        $userHash = Yii::$app->user->identity['hash'];
+
+        $href = Yii::$app->basePath . '/web/records-user/' . trim($userHash) . "/" . $file;
+
+        if (file_exists($href)) {
+            header('Content-Description: File Transfer');
+            header('Content-Type: application/octet-stream');
+            header("Content-Transfer-Encoding: Binary");
+            header('Content-Disposition: attachment; filename="' . basename($file) . '"');
+            header('Expires: 0');
+            header("Cache-Control: private");
+            header('Pragma: public');
+            flush();
+            readfile($href);
+            exit;
+        }
+
+        return false;
+    }
+
+    public function actionBrowserOutdated()
+    {
+        $this->layout = 'browserOutdated';
+        return $this->render('blank');
+    }
 }

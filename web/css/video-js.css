@@ -1233,3 +1233,6 @@ video::-webkit-media-text-track-display {
   padding: 20px 24px;
   z-index: 1; }
 
+.video-js .vjs-tech {
+    pointer-events: none;
+}

@@ -6,7 +6,7 @@ var sfutest = null;
 var opaqueId = "videoroomtest-" + Janus.randomString(12);
 //var opaqueId = "screensharingtest-" + Janus.randomString(12);
 
-var myRoomCamera = 1234;	// Demo room
+var myRoomCamera = Number($('#roomNumber').val());	// Demo room
 var cameraUserName = null;
 var cameraId = null;
 var cameraStream = null;
@@ -46,7 +46,7 @@ function publishOwnFeedCamera(useAudio) {
 
     var data = new Date();
     var d = {
-        day: data.getDay(),
+        day: data.getDate(),
         month: (data.getMonth() + 1),
         year: data.getFullYear(),
         hour: data.getHours(),
@@ -61,9 +61,9 @@ function publishOwnFeedCamera(useAudio) {
     }
 
     var z = D.year + '-' + D.month + '-' + D.day;
-    z = z + '_' + D.hour + '-' + D.minute + '-' + D.second + '-' + D.milliseconds;
+    z = z + '_' + D.hour + '-' + D.minute + '-' + D.second; // + '-' + D.milliseconds;
 
-    var fileName = "camera-" + z;
+    var fileName = "camera_" + z;
 
     sfutest.createOffer(
         {
@@ -72,21 +72,22 @@ function publishOwnFeedCamera(useAudio) {
                 id: 333,
                 audioRecv: true,
                 audioSend: useAudio,
-                videoRecv: true,
+                videoRecv: false,
                 videoSend: true,
                 video: 'lowres',
-                myStatus: 'camera',
+
+                myStatus: 'camera'
             },
             simulcast: doSimulcast,
             success: function (jsep) {
-                Janus.debug("Got publisher SDP!");
-                Janus.debug(jsep);
+                /*Janus.debug("Got publisher SDP!");*/
+                /*Janus.debug(jsep);*/
                 var publish = {
                     "id": 333,
                     "request": "configure",
                     "audio": useAudio,
                     "video": true,
-                    "record": true,
+                    "record": false,
                     "filename": "/var/www/html/watermark.wrk/records-tmp/" + fileName
                 };
                 sfutest.send({"message": publish, "jsep": jsep});
@@ -96,8 +97,7 @@ function publishOwnFeedCamera(useAudio) {
                 if (useAudio) {
                     publishOwnFeedCamera(false);
                 } else {
-                    +
-                        bootbox.alert("Вы отменили трансляцию веб-камеры. Чтобы включить трансляцию - обновите текущую страницу (Ctrl+R) или нажмите F5.");
+                    bootbox.alert("Вы отменили трансляцию веб-камеры. Чтобы включить трансляцию - обновите текущую страницу (Ctrl+R) или нажмите F5.");
                     $('#publish').removeAttr('disabled').click(function () {
                         publishOwnFeedCamera(true);
                     });
@@ -114,7 +114,7 @@ function unpublishOwnFeedCamera() {
 }
 
 function newRemoteFeed(id, display, audio, video) {
-    console.log('camera: newRemoteFeed');
+   /// //console.log('camera: newRemoteFeed');
 }
 
 // Helper to parse query string
@@ -252,7 +252,7 @@ function preshareCamera() {
 
     if (!Janus.isExtensionEnabled()) {
         bootbox.alert("You're using a recent version of Chrome but don't have the screensharing extension installed: click <b><a href='https://chrome.google.com/webstore/detail/janus-webrtc-screensharin/hapfgfdkleiggjjpfpenajgdnfckjpaj' target='_blank'>here</a></b> to do so", function () {
-            window.location.reload();
+            window.location.reload(true);
         });
         return;
     }
@@ -281,36 +281,36 @@ function preshareCamera() {
         shareCamera();
     }
 }
-
-function shareCamera() {
-
-    registerCameraUserName();
-
-    var register = {"request": "join", "room": Number(myRoomCamera), "ptype": "publisher", "display": 'camera'};
-    sfutest.send({"message": register});
-
-
-    // Create a new room
-    /*var desc = myRoomCamera + 'camera';
-     role = "publisher";
-     var create = {"request": "create", "description": desc, "bitrate": 10, "publishers": 1};
-
-     sfutest.send({
-     "message": create, success: function (result) {
-     var event = result["videoroom"];
-     Janus.debug("Event: " + event);
-     if (event != undefined && event != null) {
-
-     let roomTmp = result["room"];
-
-     Janus.log("Screen sharing session created: " + roomTmp);
-     cameraUserName = randomString(12);
-     var register = {"request": "join", "room": roomTmp, "ptype": "publisher", "display": cameraUserName};
-     sfutest.send({"message": register});
-     }
-     }
-     });*/
-}
+//
+// function shareCamera() {
+//
+//     registerCameraUserName();
+//
+//     var register = {"request": "join", "room": Number(myRoomCamera), "ptype": "publisher", "display": 'camera'};
+//     sfutest.send({"message": register});
+//
+//
+//     // Create a new room
+//     /*var desc = myRoomCamera + 'camera';
+//      role = "publisher";
+//      var create = {"request": "create", "description": desc, "bitrate": 10, "publishers": 1};
+//
+//      sfutest.send({
+//      "message": create, success: function (result) {
+//      var event = result["videoroom"];
+//      /*Janus.debug("Event: " + event);*/
+//      if (event != undefined && event != null) {
+//
+//      let roomTmp = result["room"];
+//
+//      //Janus.log("Screen sharing session created: " + roomTmp);
+//      cameraUserName = randomString(12);
+//      var register = {"request": "join", "room": roomTmp, "ptype": "publisher", "display": cameraUserName};
+//      sfutest.send({"message": register});
+//      }
+//      }
+//      });*/
+// }
 
 function randomString(len, charSet) {
     charSet = charSet || 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
@@ -351,8 +351,8 @@ $(document).ready(function () {
                                     janus.streaming = pluginHandle;
 
                                     sfutest = pluginHandle;
-                                    Janus.log("Plugin attached! (" + sfutest.getPlugin() + ", id=" + sfutest.getId() + ")");
-                                    Janus.log("  -- This is a publisher/manager");
+                                    //Janus.log("Plugin attached! (" + sfutest.getPlugin() + ", id=" + sfutest.getId() + ")");
+                                    //Janus.log("  -- This is a publisher/manager");
 
                                     let list = {
                                         "request": "list"
@@ -373,7 +373,7 @@ $(document).ready(function () {
                                     bootbox.alert("Error attaching plugin... " + error);
                                 },
                                 consentDialog: function (on) {
-                                    Janus.debug("Consent dialog shouldup_arrow be " + (on ? "on" : "off") + " now");
+                                    /*Janus.debug("Consent dialog shouldup_arrow be " + (on ? "on" : "off") + " now");*/
                                     if (on) {
                                         // Darken screen and show hint
                                         $.blockUI({
@@ -393,10 +393,10 @@ $(document).ready(function () {
                                     }
                                 },
                                 mediaState: function (medium, on) {
-                                    Janus.log("Janus " + (on ? "started" : "stopped") + " receiving our " + medium);
+                                    //Janus.log("Janus " + (on ? "started" : "stopped") + " receiving our " + medium);
                                 },
                                 webrtcState: function (on) {
-                                    Janus.log("Janus says our WebRTC PeerConnection is " + (on ? "up" : "down") + " now");
+                                    //Janus.log("Janus says our WebRTC PeerConnection is " + (on ? "up" : "down") + " now");
                                     $("#videolocal").parent().parent().unblock();
                                     // This controls allows us to override the global room bitrate cap
                                     $('#bitrate').parent().parent().removeClass('hide').show();
@@ -409,9 +409,9 @@ $(document).ready(function () {
                                         var id = $(this).attr("id");
                                         var bitrate = parseInt(id) * 1000;
                                         if (bitrate === 0) {
-                                            Janus.log("Not limiting bandwidth via REMB");
+                                            //Janus.log("Not limiting bandwidth via REMB");
                                         } else {
-                                            Janus.log("Capping bandwidth to " + bitrate + " via REMB");
+                                            //Janus.log("Capping bandwidth to " + bitrate + " via REMB");
                                         }
                                         $('#bitrateset').html($(this).html() + '<span class="caret"></span>').parent().removeClass('open');
                                         sfutest.send({"message": {"request": "configure", "bitrate": bitrate}});
@@ -437,10 +437,10 @@ $(document).ready(function () {
                                         }
                                     });
 
-                                    Janus.debug(" ::: Got a message (publisher) :::");
-                                    Janus.debug(msg);
+                                    /*Janus.debug(" ::: Got a message (publisher) :::");*/
+                                    /*Janus.debug(msg);*/
                                     var event = msg["videoroom"];
-                                    Janus.debug("Event: " + event);
+                                    /*Janus.debug("Event: " + event);*/
 
                                     if (event != undefined && event != null) {
 
@@ -451,7 +451,7 @@ $(document).ready(function () {
                                             // Publisher/manager created, negotiate WebRTC and attach to existing feeds, if any
                                             cameraId = msg["id"];
                                             mypvtid = msg["private_id"];
-                                            Janus.log("Successfully joined room " + msg["room"] + " with ID " + cameraId);
+                                            //Janus.log("Successfully joined room " + msg["room"] + " with ID " + cameraId);
 
                                             publishOwnFeedCamera(true);
 
@@ -459,46 +459,46 @@ $(document).ready(function () {
                                             if (msg["publishers"] !== undefined && msg["publishers"] !== null) {
                                                 var list = msg["publishers"];
 
-                                                Janus.debug("Got a list of available publishers/feeds:");
-                                                Janus.debug(list);
+                                                /*Janus.debug("Got a list of available publishers/feeds:");*/
+                                                /*Janus.debug(list);*/
 
                                                 for (var f in list) {
                                                     var id = list[f]["id"];
                                                     var display = list[f]["display"];
                                                     var audio = list[f]["audio_codec"];
                                                     var video = list[f]["video_codec"];
-                                                    Janus.debug("  >> [" + id + "] " + display + " (audio: " + audio + ", video: " + video + ")");
+                                                    /*Janus.debug("  >> [" + id + "] " + display + " (audio: " + audio + ", video: " + video + ")");*/
 
                                                     newRemoteFeed(id, display, audio, video);
                                                 }
-                                                // console.log('start123');
+                                                // //console.log('start123');
                                             }
 
                                         } else if (event === "destroyed") {
                                             // The room has been destroyed
                                             Janus.warn("The room has been destroyed!");
                                             bootbox.alert("The room has been destroyed", function () {
-                                                window.location.reload();
+                                                window.location.reload(true);
                                             });
                                         } else if (event === "event") {
 
                                             // Any new feed to attach to?
                                             if (msg["publishers"] !== undefined && msg["publishers"] !== null) {
                                                 var list = msg["publishers"];
-                                                Janus.debug("Got a list of available publishers/feeds:");
-                                                Janus.debug(list);
+                                                /*Janus.debug("Got a list of available publishers/feeds:");*/
+                                                /*Janus.debug(list);*/
                                                 for (var f in list) {
                                                     var id = list[f]["id"];
                                                     var display = list[f]["display"];
                                                     var audio = list[f]["audio_codec"];
                                                     var video = list[f]["video_codec"];
-                                                    Janus.debug("  >> [" + id + "] " + display + " (audio: " + audio + ", video: " + video + ")");
+                                                    /*Janus.debug("  >> [" + id + "] " + display + " (audio: " + audio + ", video: " + video + ")");*/
                                                     newRemoteFeed(id, display, audio, video);
                                                 }
                                             } else if (msg["leaving"] !== undefined && msg["leaving"] !== null) {
                                                 // One of the publishers has gone away?
                                                 var leaving = msg["leaving"];
-                                                Janus.log("Publisher left: " + leaving);
+                                                //Janus.log("Publisher left: " + leaving);
                                                 var remoteFeed = null;
                                                 for (var i = 1; i < 6; i++) {
                                                     if (feeds[i] != null && feeds[i] != undefined && feeds[i].rfid == leaving) {
@@ -507,7 +507,7 @@ $(document).ready(function () {
                                                     }
                                                 }
                                                 if (remoteFeed != null) {
-                                                    Janus.debug("Feed " + remoteFeed.rfid + " (" + remoteFeed.rfdisplay + ") has left the room, detaching");
+                                                    /*Janus.debug("Feed " + remoteFeed.rfid + " (" + remoteFeed.rfdisplay + ") has left the room, detaching");*/
                                                     $('#remote' + remoteFeed.rfindex).empty().hide();
                                                     $('#videoremote' + remoteFeed.rfindex).empty();
                                                     feeds[remoteFeed.rfindex] = null;
@@ -516,7 +516,7 @@ $(document).ready(function () {
                                             } else if (msg["unpublished"] !== undefined && msg["unpublished"] !== null) {
                                                 // One of the publishers has unpublished?
                                                 var unpublished = msg["unpublished"];
-                                                Janus.log("Publisher left: " + unpublished);
+                                                //Janus.log("Publisher left: " + unpublished);
                                                 if (unpublished === 'ok') {
                                                     // That's us
                                                     sfutest.hangup();
@@ -530,30 +530,31 @@ $(document).ready(function () {
                                                     }
                                                 }
                                                 if (remoteFeed != null) {
-                                                    Janus.debug("Feed " + remoteFeed.rfid + " (" + remoteFeed.rfdisplay + ") has left the room, detaching");
+                                                    /*Janus.debug("Feed " + remoteFeed.rfid + " (" + remoteFeed.rfdisplay + ") has left the room, detaching");*/
                                                     $('#remote' + remoteFeed.rfindex).empty().hide();
                                                     $('#videoremote' + remoteFeed.rfindex).empty();
                                                     feeds[remoteFeed.rfindex] = null;
                                                     remoteFeed.detach();
                                                 }
                                             } else if (msg["error"] !== undefined && msg["error"] !== null) {
-                                                $.ajax({
-                                                    method: 'POST',
-                                                    dataType: 'json',
-                                                    url: '/ajax/refresh-user-situation',
-                                                    data: {userId: cameraUserId},
-                                                    success: function (data) {
-                                                        window.location.reload();
-                                                    }
-                                                });
+                                                // $.ajax({
+                                                //     method: 'POST',
+                                                //     dataType: 'json',
+                                                //     url: '/ajax/refresh-user-situation',
+                                                //     data: {userId: cameraUserId},
+                                                //     async: false,
+                                                //     success: function (data) {
+                                                         window.location.reload(true);
+                                                //     }
+                                                // });
                                             }
                                         }
                                     }
 
                                     if (jsep !== undefined && jsep !== null) {
 
-                                        Janus.debug("Handling SDP as well...");
-                                        Janus.debug(jsep);
+                                        /*Janus.debug("Handling SDP as well...");*/
+                                        /*Janus.debug(jsep);*/
 
                                         sfutest.handleRemoteJsep({jsep: jsep});
 
@@ -561,9 +562,9 @@ $(document).ready(function () {
                                 },
                                 onlocalstream: function (stream) {
 
-                                    Janus.debug(" ::: Got a local stream :::");
+                                    /*Janus.debug(" ::: Got a local stream :::");*/
                                     cameraStream = stream;
-                                    Janus.debug(stream);
+                                    /*Janus.debug(stream);*/
 
                                     if (isFirstDiv) {
 
@@ -657,7 +658,7 @@ $(document).ready(function () {
                                     // The publisher stream is sendonly, we don't expect anything here
                                 },
                                 oncleanup: function () {
-                                    Janus.log(" ::: Got a cleanup notification: we are unpublished now :::");
+                                    //Janus.log(" ::: Got a cleanup notification: we are unpublished now :::");
                                     cameraStream = null;
                                     $('#videolocal').html('<button id="publish" class="btn btn-primary">Publish</button>');
 
@@ -674,11 +675,20 @@ $(document).ready(function () {
                     error: function (error) {
                         Janus.error(error);
                         bootbox.alert(error, function () {
-                            window.location.reload();
+                            window.location.reload(true);
                         });
                     },
                     destroyed: function () {
-                        window.location.reload();
+                        // $.ajax({
+                        //     method: 'POST',
+                        //     dataType: 'json',
+                        //     url: '/ajax/refresh-user-situation',
+                        //     data: {userId: cameraUserId},
+                        //     async: false,
+                        //     success: function (data) {
+                         //        window.location.reload(true);
+                        //     }
+                        // });
                     }
                 });
 

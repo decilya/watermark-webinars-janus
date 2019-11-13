@@ -5,7 +5,7 @@ $db = require __DIR__ . '/db.php';
 
 $config = [
     'id' => 'basic',
-    'name' => 'Система присутствия на мероприятиях',
+    'name' => Yii::$app->params['nameProject'],
     'basePath' => dirname(__DIR__),
     'bootstrap' => ['log'],
     'aliases' => [
@@ -54,7 +54,7 @@ $config = [
             'enablePrettyUrl' => true,
             'showScriptName' => false,
             'rules' => [
-
+                '<controller:\w>/<action:\w>/<height:\d+>/<width:\d+>' => '<controller>/<action>'
             ],
         ],
     ],

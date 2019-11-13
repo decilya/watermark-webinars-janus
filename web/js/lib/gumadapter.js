@@ -29,7 +29,7 @@ if(!webrtcUtils.log) {
             return;
         }
 
-        console.log.apply(console, arguments);
+        //console.log.apply(console, arguments);
     };
 }
 

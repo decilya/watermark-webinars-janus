@@ -85,7 +85,7 @@ function MediaStreamRecorder(mediaStream) {
 
     this.ondataavailable = function(blob) {
         if (this.disableLogs) return;
-        console.log('ondataavailable..', blob);
+     //   //console.log('ondataavailable..', blob);
     };
 
     this.onstop = function(error) {
@@ -113,7 +113,7 @@ function MediaStreamRecorder(mediaStream) {
         mediaRecorder.pause();
 
         if (this.disableLogs) return;
-        console.log('Paused recording.', this.mimeType || mediaRecorder.mimeType);
+       // //console.log('Paused recording.', this.mimeType || mediaRecorder.mimeType);
     };
 
     this.resume = function() {
@@ -123,7 +123,7 @@ function MediaStreamRecorder(mediaStream) {
         mediaRecorder.resume();
 
         if (this.disableLogs) return;
-        console.log('Resumed recording.', this.mimeType || mediaRecorder.mimeType);
+      //  //console.log('Resumed recording.', this.mimeType || mediaRecorder.mimeType);
     };
 
     // StereoAudioRecorder || WhammyRecorder || MediaRecorderWrapper || GifRecorder
@@ -290,7 +290,7 @@ function MultiStreamRecorder(arrayOfMediaStreams, options) {
             return;
         }
 
-        console.log('ondataavailable', blob);
+        ////console.log('ondataavailable', blob);
     };
 
     this.onstop = function() {};
@@ -1095,7 +1095,7 @@ function MediaRecorderWrapper(mediaStream) {
         };
 
         if (!self.disableLogs && !__disableLogs) {
-            console.log('Passing following params over MediaRecorder API.', recorderHints);
+            //console.log('Passing following params over MediaRecorder API.', recorderHints);
         }
 
         if (mediaRecorder) {
@@ -1283,7 +1283,7 @@ function MediaRecorderWrapper(mediaStream) {
      * recorder.ondataavailable = function(data) {};
      */
     this.ondataavailable = function(blob) {
-        console.log('recorded-blob', blob);
+        //console.log('recorded-blob', blob);
     };
 
     /**
@@ -1812,8 +1812,8 @@ function WhammyRecorderHelper(mediaStream, root) {
         lastTime = new Date().getTime();
         whammy = new Whammy.Video(root.speed, root.quality);
 
-        console.log('canvas resolutions', canvas.width, '*', canvas.height);
-        console.log('video width/height', video.width || canvas.width, '*', video.height || canvas.height);
+        //console.log('canvas resolutions', canvas.width, '*', canvas.height);
+        //console.log('video width/height', video.width || canvas.width, '*', video.height || canvas.height);
 
         drawFrames();
     };
@@ -2022,9 +2022,9 @@ function WhammyRecorderHelper(mediaStream, root) {
             }
 
             if (!doNotCheckNext && maxPixCount - matchPixCount <= maxPixCount * frameTolerance) {
-                // console.log('removed black frame : ' + f + ' ; frame duration ' + _frames[f].duration);
+                // //console.log('removed black frame : ' + f + ' ; frame duration ' + _frames[f].duration);
             } else {
-                // console.log('frame is passed : ' + f);
+                // //console.log('frame is passed : ' + f);
                 if (checkUntilNotBlack) {
                     doNotCheckNext = true;
                 }
@@ -2133,8 +2133,8 @@ function GifRecorder(mediaStream) {
 
             gifEncoder.addFrame(context);
 
-            // console.log('Recording...' + Math.round((Date.now() - startTime) / 1000) + 's');
-            // console.log("fps: ", 1000 / (time - lastFrameTime));
+            // //console.log('Recording...' + Math.round((Date.now() - startTime) / 1000) + 's');
+            // //console.log("fps: ", 1000 / (time - lastFrameTime));
 
             lastFrameTime = time;
         }

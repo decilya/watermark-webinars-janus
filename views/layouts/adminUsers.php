@@ -1,112 +1,152 @@
 <?php
 
 /* @var $this \yii\web\View */
+
 /* @var $content string */
 
 use app\widgets\Alert;
 use yii\helpers\Html;
 use yii\bootstrap\Nav;
 use yii\bootstrap\NavBar;
+use yii\web\View;
 use yii\widgets\Breadcrumbs;
 use app\assets\AppAsset;
 
 AppAsset::register($this);
-$this->title = 'Система присутствия на мероприятиях';
+$this->title = Yii::$app->params['nameProject'];
 ?>
 <?php $this->beginPage() ?>
-<!DOCTYPE html>
-<html lang="<?= Yii::$app->language ?>">
-<head>
-    <meta charset="<?= Yii::$app->charset ?>">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <?= Html::csrfMetaTags() ?>
-    <title><?= Html::encode($this->title) ?></title>
-    <?php $this->head() ?>
-</head>
-<body>
-<?php $this->beginBody()  ?>
-<input type="hidden" id="urlHost" value="<?= $_SERVER['HTTP_HOST']; ?>">
-Это ветка fix
-<div class="wrapper">
-    <header class="header">
+    <!DOCTYPE html>
+    <html lang="<?= Yii::$app->language ?>">
+    <head>
+        <meta charset="<?= Yii::$app->charset ?>">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+
+        <?= Html::csrfMetaTags() ?>
+        <title><?= Html::encode($this->title) ?></title>
         <?php
-        NavBar::begin([
-            'brandLabel' => Yii::$app->name,
-            'brandUrl' => Yii::$app->homeUrl,
-            'options' => [
-                'class' => 'navbar-inverse navbar-fixed-top header-nav',
-            ],
-        ]);
-        echo Nav::widget([
-            'options' => ['class' => 'navbar-nav pull-right'],
-            'items' => [
-                (Yii::$app->user->identity->type == \app\models\User::TYPE_USER_ADMIN) ||
-                (Yii::$app->user->identity->type == \app\models\User::TYPE_USER_MANAGER) ||
-                (Yii::$app->user->identity->type == \app\models\User::TYPE_USER_MASTER) ?
-                    ['label' => 'Транслировать', 'url' => ['/site/translate-room']] : '',
+            $this->registerJsFile('/js/adminUsers_layout.js?' . time(), [
+                'depends' => 'yii\web\JqueryAsset',
+                'position' => yii\web\View::POS_HEAD,
+            ]);
 
-                (Yii::$app->user->identity->type == \app\models\User::TYPE_USER_ADMIN) ?
-                    ['label' => 'Пользователи', 'url' => ['/admin/default/users']] : '',
-
-                Yii::$app->user->isGuest ? (
-                ['label' => 'Войти', 'url' => ['/site/login']]
-                ) : (
-                    '<li>'
-                    . Html::beginForm(['/site/logout'], 'post')
-                    . Html::submitButton(
-                        'Выйти (' . Yii::$app->user->identity->username . ')',
-                        [
-                            'class' => 'btn btn-link logout',
-                            'id' => 'userBlock',
-                            'data-user' => Yii::$app->user->identity->id,
-                            'data-name' => Yii::$app->user->identity->name,
-                            'data-type' => Yii::$app->user->identity->type,
-                            'data-surname' => Yii::$app->user->identity->surname,
-                            'data-patronymic' => Yii::$app->user->identity->patronymic,
-                        ]
-                    )
-                    . Html::endForm()
-                    . '</li>'
-                )
-            ],
-        ]);
-        NavBar::end();
+            $this->registerCssFile("/css/material.css");
         ?>
-    </header>
 
-    <main class="main">
-        <div class="container">
-            <?= Breadcrumbs::widget([
-                'homeLink' => ['label' => 'Главная', 'url' => '/'],
-                'links' => isset($this->params['breadcrumbs']) ? $this->params['breadcrumbs'] : [],
-            ]) ?>
-            <?= Alert::widget() ?>
-            <?= $content ?>
-        </div>
-    </main>
 
-    <footer class="footer">
-        <div class="container">
-            <div class="col-xs-6 col-sm-6 col-md-6">
-                <p class="pull-left footer__copyright">
-                    &copy; 2006—<?= date('Y') ?>. ЧОУ ДПО «Институт прикладной автоматизации и программирования»
-                </p>
+        <?php $this->head(); ?>
+
+        <!-- Font Awesome -->
+        <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.8.2/css/all.css">
+        <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+        <script
+        src="https://code.jquery.com/ui/1.12.0/jquery-ui.min.js"
+        integrity="sha256-eGE6blurk5sHj+rmkfsGYeKyZx3M4bG+ZlFyA7Kns7E="
+        crossorigin="anonymous"></script>
+    </head>
+    <body>
+    <?php $this->beginBody() ?>
+
+    <div class="wrapper">
+    <!-- Always shows a header, even in smaller screens. -->
+        <div class="mdl-layout mdl-js-layout mdl-layout--fixed-header">
+        <header class="mdl-layout__header">
+            <div class="mdl-layout__header-row">
+            <!-- Title -->
+            <span class="mdl-layout-title"><?= Yii::$app->params['nameProject'] ?></span>
+            <!-- Add spacer, to align navigation to the right -->
+            <div class="mdl-layout-spacer"></div>
+            <!-- Navigation. We hide it in small screens. -->
+            <nav class="mdl-navigation mdl-layout--large-screen-only">
+                <?php if( (Yii::$app->user->identity->type == \app\models\User::TYPE_USER_ADMIN) ||
+                        (Yii::$app->user->identity->type == \app\models\User::TYPE_USER_MANAGER) ||
+                        (Yii::$app->user->identity->type == \app\models\User::TYPE_USER_MASTER) ): ?>
+                    <a class="mdl-navigation__link" href="/site/translate-room">Транслировать</a>
+                <?php endif; ?>
+                <?php if( (Yii::$app->user->identity->type == \app\models\User::TYPE_USER_MANAGER) ||
+                        (Yii::$app->user->identity->type == \app\models\User::TYPE_USER_ADMIN) ): ?>
+                    <a class="mdl-navigation__link" href="/admin/default/users">Пользователи</a>
+                <?php endif; ?>
+                <?php if( (!Yii::$app->user->isGuest) ): ?>
+                    <a class="mdl-navigation__link" href="<?= Yii::$app->homeUrl ?>">Трансляция</a>
+                <?php endif; ?>
+                <?php if( (Yii::$app->user->identity->type == \app\models\User::TYPE_USER_ADMIN) ||
+                        (Yii::$app->user->identity->type == \app\models\User::TYPE_USER_MANAGER) ||
+                        (Yii::$app->user->identity->type == \app\models\User::TYPE_USER_MASTER)  ||
+                        (Yii::$app->user->identity->type == \app\models\User::TYPE_USER_STUDENT)): ?>
+                    <a class="mdl-navigation__link" href="/record/archive">Архив</a>
+                <?php endif; ?>
+
+                <?php if( (Yii::$app->user->isGuest) ): ?>
+                    <a class="mdl-navigation__link" href="<?= Yii::$app->homeUrl ?>">Войти</a>
+                <?php else: ?>
+                    <a class="mdl-navigation__link" href="/site/logout"> <i class="material-icons">exit_to_app</i> Выйти (<?= Yii::$app->user->identity->username ?>)</a>
+                <?php endif; ?>
+            </nav>
             </div>
-            <div class="col-xs-6 col-sm-6 col-md-6">
-                <p class="pull-right footer__address">
-                    Адрес: 198097, Санкт-Петербург, пр. Стачек, д.47, БЦ «Шереметев». <br>
-                    Телефон/факс: +7 (812) 655-63-21, E-mail: info@ipap.ru
+        </header>
+        <div class="mdl-layout__drawer">
+            <span class="mdl-layout-title"><?= Yii::$app->params['nameProject'] ?></span>
+            <nav class="mdl-navigation">
+                <?php if( (Yii::$app->user->identity->type == \app\models\User::TYPE_USER_ADMIN) ||
+                        (Yii::$app->user->identity->type == \app\models\User::TYPE_USER_MANAGER) ||
+                        (Yii::$app->user->identity->type == \app\models\User::TYPE_USER_MASTER) ): ?>
+                    <a class="mdl-navigation__link" href="/site/translate-room">Транслировать</a>
+                <?php endif; ?>
+                <?php if( (Yii::$app->user->identity->type == \app\models\User::TYPE_USER_MANAGER) ||
+                        (Yii::$app->user->identity->type == \app\models\User::TYPE_USER_ADMIN) ): ?>
+                    <a class="mdl-navigation__link" href="/admin/default/users">Пользователи</a>
+                <?php endif; ?>
+                <?php if( (!Yii::$app->user->isGuest) ): ?>
+                    <a class="mdl-navigation__link" href="<?= Yii::$app->homeUrl ?>">Трансляция</a>
+                <?php endif; ?>
+                <?php if( (Yii::$app->user->identity->type == \app\models\User::TYPE_USER_ADMIN) ||
+                        (Yii::$app->user->identity->type == \app\models\User::TYPE_USER_MANAGER) ||
+                        (Yii::$app->user->identity->type == \app\models\User::TYPE_USER_MASTER)  ||
+                        (Yii::$app->user->identity->type == \app\models\User::TYPE_USER_STUDENT)): ?>
+                    <a class="mdl-navigation__link" href="/record/archive">Архив</a>
+                <?php endif; ?>
 
-                </p>
-            </div>
+                <?php if( (Yii::$app->user->isGuest) ): ?>
+                    <a class="mdl-navigation__link" href="<?= Yii::$app->homeUrl ?>">Войти</a>
+                <?php else: ?>
+                    <a class="mdl-navigation__link" href="/site/logout"> <i class="material-icons">exit_to_app</i> Выйти (<?= Yii::$app->user->identity->username ?>)</a>
+                <?php endif; ?>
+            </nav>
         </div>
-    </footer>
-</div>
+            <main class="mdl-layout__content" style="flex-grow: 0;">
+                <div class="page-content" style="min-height: 84.1vh !important;">
+
+                        <?= Alert::widget() ?>
+                        <?= $content ?>
+                </div>
+                <footer class="mdl-mini-footer">
+                    <div class="mdl-mini-footer__left-section">
+                        <div class="mdl-logo">
+                            <p class="pull-left footer__copyright">
+                                &copy; 2006—<?= date('Y') ?>. ЧОУ ДПО «Институт прикладной автоматизации и программирования»
+                            </p>
+                        </div>
+                    </div>
+                    <div class="mdl-mini-footer__right-section">
+                            <p class="pull-right footer__address">
+                                Адрес: 198097, Санкт-Петербург, пр. Стачек, д.47, БЦ «Шереметев». <br>
+                                Телефон/факс: +7 (812) 655-63-21, E-mail: info@ipap.ru
+                            </p>
+                    </div>
+                </footer>
+            </main>
+        </div>
+
+    </div>
+
+    <?php $this->endBody() ?>
+
+    <script>
 
 
-
-<?php $this->endBody() ?>
-</body>
-</html>
+    </script>
+    </body>
+    </html>
 <?php $this->endPage() ?>

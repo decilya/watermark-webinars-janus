@@ -2,7 +2,7 @@
 .idea
 .idea/*
 .idea/
-
+.sass-cache
 # netbeans project files
 nbproject
 
@@ -44,3 +44,15 @@ runtime/*
 web/assets/*
 
 uploads/*
+records-tmp/*
+records/*
+records/
+records-user/*
+records-user
+records-tmp
+
+/commands/recordbuilder/cjr.conf
+
+/cjr.log
+/commands/recordbuilder/__pycache__/
+/commands/recordbuilder/cjr.conf.save

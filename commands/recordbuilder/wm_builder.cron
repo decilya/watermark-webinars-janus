@@ -1,0 +1,2 @@
+MAILTO=''
+*/5 * * * *	root	python3 <path>/wm_build_records.py -c <path>/cjr.conf

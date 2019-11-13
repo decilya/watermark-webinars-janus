@@ -47,10 +47,33 @@ php yii migrate
 
 5) Необходимо создать папку для записей в корне проекта:
 
-mkdir records-tmp/
-
+a) mkdir records-tmp/
 chown -R www-data records-tmp/
 
+b) mkdir records/
+chown -R www-data records/
+
+c)  mkdir records-user/
+ chown -R www-data records-user/
+
+
+ Создадим ссылку на дерикторию 
+ln -s /var/www/html/watermark.wrk/records-user/ /var/www/html/watermark.wrk/web/records-user
+
++ создадим папку для админа
+ln -s /var/www/html/watermark.wrk/records /var/www/html/watermark.wrk/web/records
+
++ создадим папку для создания записи 
+ln -s /var/www/html/watermark.wrk/records-tmp /var/www/html/watermark.wrk/web/records-tmp
+
+
+ ===============================
+ Ручной запуск обратботки запросов видео:
+
+ sudo python3 commands/recordbuilder/wm_build_records.py -c commands/recordbuilder/cjr.conf
+
+ (для исспользования команды необходимо скопировать commands/recordbuilder/conf.origin/cjr.conf на ОДИН уровень вверх, чтобы было как в команде, л - логика)
+ ================================
 
 *JANUS*
 -------------

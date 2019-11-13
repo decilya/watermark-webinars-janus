@@ -37,7 +37,7 @@
 	}
 
 	function messageReceived(e) {
-	    console.log("Ответ сервера: " + e.data);
+	    //console.log("Ответ сервера: " + e.data);
         document.getElementById("sock-info").innerHTML += (e.data+"<br />");
 	}
 

@@ -3956,7 +3956,7 @@
                             return;
                         }
                         if (typeof console !== 'undefined' && typeof console.log === 'function') {
-                            console.log.apply(console, arguments);
+                            //console.log.apply(console, arguments);
                         }
                     }
                 },

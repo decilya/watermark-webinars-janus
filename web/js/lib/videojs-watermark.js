@@ -1,7 +1,7 @@
-console.log('watermark: Start');
+//console.log('watermark: Start');
 
 (function() {
-    console.log('watermark: Init defaults');
+    //console.log('watermark: Init defaults');
     var defaults = {
             file: '/w.png',
             xpos: 0,
@@ -40,7 +40,7 @@ console.log('watermark: Start');
      * register the thubmnails plugin
      */
     videojs.plugin('watermark', function(settings) {
-        if (settings.debug) console.log('watermark: Register init');
+        if (settings.debug) //console.log('watermark: Register init');
 
         var options, player, video, img, link;
         options = extend(defaults, settings);
@@ -94,9 +94,9 @@ console.log('watermark: Start');
         }
         else if ((options.ypos === 50) && (options.xpos === 50)) // Center
         {
-            if (options.debug) console.log('watermark: player:' + player.width + 'x' + player.height);
-            if (options.debug) console.log('watermark: video:' + video.videoWidth + 'x' + video.videoHeight);
-            if (options.debug) console.log('watermark: image:' + img.width + 'x' + img.height);
+            if (options.debug) //console.log('watermark: player:' + player.width + 'x' + player.height);
+            if (options.debug) //console.log('watermark: video:' + video.videoWidth + 'x' + video.videoHeight);
+            if (options.debug) //console.log('watermark: image:' + img.width + 'x' + img.height);
             div.style.top = (this.height()/2)+"px";
             div.style.left = (this.width()/2)+"px";
         }
@@ -122,6 +122,6 @@ console.log('watermark: Start');
             player.appendChild(div);
         }
 
-        if (options.debug) console.log('watermark: Register end');
+        if (options.debug) //console.log('watermark: Register end');
     });
 })();

@@ -5,7 +5,7 @@ var patronymicCamera = userBlockCamera.data('patronymic');
 var surnameCamera = userBlockCamera.data('surname');
 var nameCamera = userBlockCamera.data('name');
 var myUserNameCamera = surnameCamera + ' ' + nameCamera + ' ' + patronymicCamera;
-const cameraUserId = userBlockCamera.data('user');
+var cameraUserId = userBlockCamera.data('user');
 
 var roomCamera = null;
 var opaqueIdCamera = null;
@@ -18,8 +18,10 @@ var cameraStarted = false;
 
 var remoteFeed = null;
 
+var myChatRoom = Number($('#roomNumber').val());
+
 $(document).ready(function () {
-    //
+
     let currentRoomCamera = $('#currentRoomCamera').val();
     let opaqueIdCamera = $('#opaqueIdCamera').val();
 
@@ -55,8 +57,8 @@ function newRemoteFeedCamera(id, display) {
             opaqueId: opaqueIdCamera,
             success: function (pluginHandle) {
                 remoteFeed = pluginHandle;
-                Janus.log("Plugin attached! (" + remoteFeed.getPlugin() + ", id=" + remoteFeed.getId() + ")");
-                Janus.log("  -- This is a subscriber");
+                //Janus.log("Plugin attached! (" + remoteFeed.getPlugin() + ", id=" + remoteFeed.getId() + ")");
+                ////Janus.log("  -- This is a subscriber");
                 // We wait for the plugin to send us an offer
                 var listen = {"request": "join", "room": roomCamera, "ptype": "listener", "feed": id};
                 remoteFeed.send({"message": listen});
@@ -66,11 +68,11 @@ function newRemoteFeedCamera(id, display) {
                 bootbox.alert("Error attaching plugin... " + error);
             },
             onmessage: function (msg, jsep) {
-                Janus.debug(" ::: Got a message (listener) :::");
-                Janus.debug(msg);
+                /*Janus.debug(" ::: Got a message (listener) :::");*/
+                /*Janus.debug(msg);*/
                 var event = msg["videoroom"];
-                Janus.debug("Event: " + event);
-                console.log("event: " + event);
+                /*Janus.debug("Event: " + event);*/
+                // //console.log("event: " + event);
                 if (event != undefined && event != null) {
                     if (event === "attached") {
                         // Subscriber created and attached
@@ -80,7 +82,7 @@ function newRemoteFeedCamera(id, display) {
                         } else {
                             spinnerCamera.spin();
                         }
-                        Janus.log("Successfully attached to feed " + id + " (" + display + ") in room " + msg["room"]);
+                        //Janus.log("Successfully attached to feed " + id + " (" + display + ") in room " + msg["room"]);
                         $('#screenmenu').hide();
                         $('#room').removeClass('hide').show();
                     } else {
@@ -88,48 +90,50 @@ function newRemoteFeedCamera(id, display) {
                     }
                 }
                 if (jsep !== undefined && jsep !== null) {
-                    Janus.debug("Handling SDP as well...");
-                    Janus.debug(jsep);
+                    /*Janus.debug("Handling SDP as well...");*/
+                    /*Janus.debug(jsep);*/
                     // Answer and attach
                     remoteFeed.createAnswer(
                         {
                             jsep: jsep,
                             media: {audioSend: false, videoSend: false},	// We want recvonly audio/video
                             success: function (jsep) {
-                                Janus.debug("Got SDP!");
-                                Janus.debug(jsep);
+                                /*Janus.debug("Got SDP!");*/
+                                /*Janus.debug(jsep);*/
                                 var body = {"request": "start", "room": roomCamera};
                                 remoteFeed.send({"message": body, "jsep": jsep});
                             },
                             error: function (error) {
                                 Janus.error("WebRTC error:", error);
-                                bootbox.alert("WebRTC error... " + error);
+                                //bootbox.alert("WebRTC error... " + error);
                             }
                         });
 
-                    setInterval(
-                        function () {
-                            if (remoteFeed.getBitrate() == 'Invalid PeerConnection') {
-                                $.ajax({
-                                    method: 'POST',
-                                    dataType: 'json',
-                                    url: '/ajax/refresh-user-situation',
-                                    data: {userId: cameraUserId},
-                                    success: function (data) {
-                                        window.location.reload();
-                                    }
-                                });
-                            }
+                    if (remoteFeed.getBitrate() === 'Invalid PeerConnection') {
+                        window.location.reload(true);
+                    }
 
-                            //if ($('.main-page').length != 1) {
-                            //    $('#bit1').html(remoteFeed.getBitrate());
-                            //}
-                        }, 1000
-                    );
+                    // setInterval(
+
+                    //     function () {
+                    //
+                    //             // $.ajax({
+                    //             //     method: 'POST',
+                    //             //     dataType: 'json',
+                    //             //     url: '/ajax/refresh-user-situation',
+                    //             //     data: {userId: cameraUserId},
+                    //             //     async: false,
+                    //             //     success: function (data) {
+                    //             //
+                    //             //     }
+                    //             // });
+                    //         }
+                    //     }, 1000
+                    // );
                 }
             },
             onlocalstream: function (stream) {
-                console.log("onlocalstream");
+                //    //console.log("onlocalstream");
             },
             onremotestream: function (stream) {
 
@@ -152,14 +156,13 @@ function newRemoteFeedCamera(id, display) {
 
                     cameraVideoJs.on('playing', function () {
                         $('#videos1').show();
-                        $('#videos1 .vjs-volume-menu-button').click();
                         $('#loadingClient').hide();
                     });
 
                 }
             },
             oncleanup: function () {
-                Janus.log(" ::: Got a cleanup notification (remote feed " + id + ") :::");
+                //Janus.log(" ::: Got a cleanup notification (remote feed " + id + ") :::");
                 // $('#waitingvideo').remove();
                 if (spinnerCamera !== null && spinnerCamera !== undefined)
                     spinnerCamera.stop();
@@ -198,85 +201,94 @@ function startJanusForCamera(currentRoomCamera) {
                                     handleCamera.send({
                                         "message": register,
                                         success: function (result) {
-                                            console.log(result);
+                                            //    //console.log(result);
                                         }
                                     });
+
 
                                     // Постоянно проверяем состояние трансляций, если
                                     setInterval(
                                         function () {
                                             "use strict";
 
-                                            if ($('.main-page')) {
+                                            var list = {
+                                                "request": "listparticipants",
+                                                "room": myChatRoom
+                                            };
 
-                                                var list = {
-                                                    "request": "listparticipants",
-                                                    "room": myChatRoom
-                                                };
+                                            handleCamera.send({
+                                                "message": list,
+                                                success: function (result) {
 
-                                                handleCamera.send({
-                                                    "message": list,
-                                                    success: function (result) {
+                                                    var tmpParticipants = result['participants'];
+                                                    var notPublisher = true;
 
-                                                        var tmpParticipants = result['participants'];
-                                                        var notPublisher = true;
+                                                    if (tmpParticipants) {
 
-                                                        if (tmpParticipants) {
+                                                        if (!tmpParticipants.length) {
 
-                                                            if (tmpParticipants.length != undefined) {
+                                                            for (var j = 0; j < tmpParticipants.length; j++) {
 
-                                                                for (var j = 0; j < tmpParticipants.length; j++) {
-
-                                                                    if (tmpParticipants[j]['publisher'] == true) {
-                                                                        notPublisher = false;
-                                                                    }
+                                                                if (!tmpParticipants[j]['publisher']) {
+                                                                    notPublisher = false;
                                                                 }
                                                             }
                                                         }
-
-                                                        if (notPublisher) {
-                                                            $('#notStart').show();
-                                                            $('#loadingClient').hide();
-
-                                                        } else {
-                                                            $('#notStart').hide();
-                                                            // $('#loadingClient').hide();
-                                                        }
-                                                    },
-                                                    error: function () {
-                                                        $.ajax({
-                                                            method: 'POST',
-                                                            dataType: 'json',
-                                                            url: '/ajax/refresh-user-situation',
-                                                            data: {userId: cameraUserId},
-                                                            success: function (data) {
-                                                                window.location.reload();
-                                                            }
-                                                        });
                                                     }
-                                                });
 
-                                            }
+                                                    if (notPublisher) {
+
+                                                        // $.ajax({
+                                                        //     method: 'POST',
+                                                        //     dataType: 'json',
+                                                        //     url: '/ajax/refresh-user-situation',
+                                                        //     data: {userId: cameraUserId},
+                                                        //     async: false,
+                                                        //     success: function (data) {
+                                                        //         window.location.reload(true);
+                                                        //     }
+                                                        // });
+
+                                                    } else {
+                                                        $('#notStart').hide();
+                                                    }
+                                                },
+                                                error: function () {
+                                                    // $.ajax({
+                                                    //     method: 'POST',
+                                                    //     dataType: 'json',
+                                                    //     url: '/ajax/refresh-user-situation',
+                                                    //     data: {userId: cameraUserId},
+                                                    //     async: false,
+                                                    //     success: function (data) {
+                                                         window.location.reload(true);
+                                                    //     }
+                                                    // });
+                                                }
+                                            });
+
 
                                         }, 2000
                                     );
+
+
                                 },
 
                                 onmessage: function (msg, jsep) {
 
                                     var event = msg["videoroom"];
-                                    Janus.debug("Event: " + event);
+                                    /*Janus.debug("Event: " + event);*/
 
                                     if (event === "joined") {
                                         if (roleCamera === "publisher") {
                                             // This is our session, publish our stream
-                                            Janus.debug("Negotiating WebRTC stream for our screen (capture " + captureCamera + ")");
+                                            /*Janus.debug("Negotiating WebRTC stream for our screen (capture " + captureCamera + ")");*/
                                             handleCamera.createOffer(
                                                 {
                                                     media: {video: captureCamera, audioSend: true, videoRecv: false},	// Screen sharing Publishers are sendonly
                                                     success: function (jsep) {
-                                                        Janus.debug("Got publisher SDP!");
-                                                        Janus.debug(jsep);
+                                                        /*Janus.debug("Got publisher SDP!");*/
+                                                        /*Janus.debug(jsep);*/
                                                         var publish = {
                                                             "request": "configure",
                                                             "audio": true,
@@ -295,38 +307,37 @@ function startJanusForCamera(currentRoomCamera) {
                                             if (msg["publishers"] !== undefined && msg["publishers"] !== null) {
                                                 var list = msg["publishers"];
 
-                                                Janus.debug("Got a list of available publishers/feeds:");
-                                                Janus.debug(list);
+                                                /*Janus.debug("Got a list of available publishers/feeds:");*/
+                                                /*Janus.debug(list);*/
                                                 for (var f in list) {
                                                     var id = list[f]["id"];
                                                     var display = list[f]["display"];
-                                                    Janus.debug("  >> [" + id + "] " + display);
+                                                    /*Janus.debug("  >> [" + id + "] " + display);*/
                                                     newRemoteFeedCamera(id, display)
                                                 }
                                             }
                                         }
-                                    }
-                                    else if (event === "event") {
+                                    } else if (event === "event") {
                                         // Any feed to attach to?
                                         if (roleCamera === "listener" && msg["publishers"] !== undefined && msg["publishers"] !== null) {
                                             var list = msg["publishers"];
-                                            Janus.debug("Got a list of available publishers/feeds:");
-                                            Janus.debug(list);
+                                            /*Janus.debug("Got a list of available publishers/feeds:");*/
+                                            /*Janus.debug(list);*/
                                             for (var f in list) {
                                                 var id = list[f]["id"];
 
                                                 var display = list[f]["display"];
 
-                                                Janus.debug("  >> [" + id + "] " + display);
+                                                /*Janus.debug("  >> [" + id + "] " + display);*/
                                                 newRemoteFeedCamera(id, display)
                                             }
                                         } else if (msg["leaving"] !== undefined && msg["leaving"] !== null) {
                                             // One of the publishers has gone away?
                                             var leaving = msg["leaving"];
-                                            Janus.log("Publisher left: " + leaving);
+                                            //Janus.log("Publisher left: " + leaving);
                                             /*if (roleCamera === "listener" && msg["leaving"] === source) {
                                              bootbox.alert("The screen sharing session is over, the publisher left", function () {
-                                             window.location.reload();
+                                             window.location.reload(true);
                                              });
                                              }*/
                                         } else if (msg["error"] !== undefined && msg["error"] !== null) {
@@ -341,18 +352,21 @@ function startJanusForCamera(currentRoomCamera) {
                                             handleCamera.handleRemoteJsep({jsep: jsep});
                                         }
                                     }
-                                },
+                                }
+                                ,
                                 onlocalstream: function (stream) {
 
-                                },
+                                }
+                                ,
                                 onremotestream: function (stream) {
 
                                 }
-                            });
+                            })
+                        ;
                     },
                     error: function (cause) {
-                        console.log(cause);
-                        console.log('error');
+                        // //console.log(cause);
+                        //  //console.log('error');
                     },
                     destroyed: function () {
                         // I should get rid of this

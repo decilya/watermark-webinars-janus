@@ -1,9 +1,4 @@
 <?php
-/**
- * @link http://www.yiiframework.com/
- * @copyright Copyright (c) 2008 Yii Software LLC
- * @license http://www.yiiframework.com/license/
- */
 
 namespace app\commands;
 
@@ -76,7 +71,9 @@ class AppController extends Controller
      * Добавить в систему админа, если его нет. В качестве параметра метод принимает email суперпользователя; при вызове метода без парметра админ будет создан с почтой via@wizardforum.ru. Пример вызова: php yii app/add-admin test@test.com
      *
      * @param string|null $email
+     * @throws
      */
+
     public function actionAddAdmin($email =  null)
     {
         $model = User::find()->where(['username' => 'admin'])->one();

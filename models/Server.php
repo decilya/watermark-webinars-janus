@@ -18,6 +18,9 @@ use yii\db\ActiveRecord;
  * @property string $currentRoomScreen
  * @property int $on
  * @property int restart
+ *
+ * @property int $now
+ * @property int $screen
  */
 class Server extends ActiveRecord
 {
@@ -35,10 +38,9 @@ class Server extends ActiveRecord
     public function rules()
     {
         return [
-            [['currentRoomCamera', 'currentRoomScreen'], 'required'],
             [['course', 'opaqueIdCamera', 'opaqueIdScreen'], 'string', 'max' => 250],
-            [['currentRoomCamera', 'currentRoomScreen'], 'string', 'max' => 120],
-            [['on', 'restart'], 'integer'],
+            [['currentRoomScreen'], 'string', 'max' => 120],
+            [['on', 'restart', 'now', 'screen'], 'integer'],
         ];
     }
 
